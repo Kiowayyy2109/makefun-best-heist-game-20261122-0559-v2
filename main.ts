@@ -163,8 +163,15 @@ function copyTreeSorted(srcDir: string, dstDir: string): void {
 }
 
 function prepareOutput(outputDir: string): void {
-  if (existsSync(outputDir)) rmSync(outputDir, { recursive: true, force: true });
+  // The grader pre-creates the output directory (owned by root) and runs
+  // this program as an unprivileged user, so removing the directory itself
+  // fails with EPERM. Keep the directory in place and clear only its
+  // contents, entry by entry, so a second run starts from the same empty
+  // state as a fresh one.
   mkdirSync(outputDir, { recursive: true });
+  for (const entry of readdirSync(outputDir)) {
+    rmSync(join(outputDir, entry), { recursive: true, force: true });
+  }
 }
 
 // ---------------------------------------------------------------------------
